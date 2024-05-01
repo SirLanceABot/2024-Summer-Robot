@@ -17,11 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.AutoCommandList;
 import frc.robot.motors.MotorController4237;
-import frc.robot.shuffleboard.AutonomousTab;
-import frc.robot.shuffleboard.AutonomousTabData;
-import frc.robot.shuffleboard.MainShuffleboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -34,8 +30,8 @@ public class Robot extends TimedRobot
     // This string gets the full name of the class, including the package name
     private static final String fullClassName = MethodHandles.lookup().lookupClass().getCanonicalName();
 
-    private static final NetworkTableInstance nti;
-    private static final DataLog log;  
+    // private static final NetworkTableInstance nti;
+    // private static final DataLog log;  
 
     // *** STATIC INITIALIZATION BLOCK ***
     // This block of code is run first when the class is loaded
@@ -51,23 +47,24 @@ public class Robot extends TimedRobot
             e.printStackTrace();
         } 
 
-        // DataLogManager.start();
-        DataLogManager.logNetworkTables(false);
-        log = DataLogManager.getLog();
+        DataLogger4237.start();
+        // // DataLogManager.start();
+        //+ DataLogManager.logNetworkTables(false);
+        //+ log = DataLogManager.getLog();
         
-        nti = NetworkTableInstance.getDefault();
-        DriverStation.startDataLog(log, true);
-        nti.startEntryDataLog(log, "/FMSInfo", "NT:/FMSInfo");
-        nti.startEntryDataLog(log, "/" + Constants.NETWORK_TABLE_NAME, "NT:/" + Constants.NETWORK_TABLE_NAME);
-        nti.startEntryDataLog(log, "/" + Constants.ADVANTAGE_SCOPE_TABLE_NAME, "NT:/" + Constants.ADVANTAGE_SCOPE_TABLE_NAME);
-        nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_1_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_1_BOT_POSE);
-        nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_2_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_2_BOT_POSE);
-        nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_3_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_3_BOT_POSE);
-        nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_4_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_4_BOT_POSE);
-        // nti.startEntryDataLog(log, "/SmartDashboard", "NT:/SmartDashboard");
-        // nti.startEntryDataLog(log, "/Shuffleboard", "NT:/Shuffleboard");
-        // nti.startEntryDataLog(log, "/LiveWindow", "NT:/LiveWindow");
-        nti.startConnectionDataLog(log, "NTConnection");
+        //+ nti = NetworkTableInstance.getDefault();
+        //+ DriverStation.startDataLog(log, true);
+        //+ nti.startEntryDataLog(log, "/FMSInfo", "NT:/FMSInfo");
+        //+ nti.startEntryDataLog(log, "/" + Constants.NETWORK_TABLE_NAME, "NT:/" + Constants.NETWORK_TABLE_NAME);
+        //+ nti.startEntryDataLog(log, "/" + Constants.ADVANTAGE_SCOPE_TABLE_NAME, "NT:/" + Constants.ADVANTAGE_SCOPE_TABLE_NAME);
+        //+ nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_1_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_1_BOT_POSE);
+        //+ nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_2_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_2_BOT_POSE);
+        //+ nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_3_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_3_BOT_POSE);
+        //+ nti.startEntryDataLog(log, "/" + Constants.Camera.CAMERA_4_BOT_POSE, "NT:/" + Constants.Camera.CAMERA_4_BOT_POSE);
+        //+ // nti.startEntryDataLog(log, "/SmartDashboard", "NT:/SmartDashboard");
+        //+ // nti.startEntryDataLog(log, "/Shuffleboard", "NT:/Shuffleboard");
+        //+ // nti.startEntryDataLog(log, "/LiveWindow", "NT:/LiveWindow");
+        //+ nti.startConnectionDataLog(log, "NTConnection");
 
     }
 
@@ -157,25 +154,15 @@ public class Robot extends TimedRobot
             robotContainer.mainShuffleboard.autonomousTab != null)
         {
             // Check if there is new data on the Autonomous Tab (Send Data button is pressed)
-            boolean isNewData = robotContainer.mainShuffleboard.autonomousTab.isNewData();
-
-            if (isNewData)
+            if (robotContainer.mainShuffleboard.autonomousTab.isNewData())
             {
-                // Create a copy of the Autonomous Tab Data that is on the Autonomous Tab
-                // autonomousTabData = new AutonomousTabData(robotContainer.mainShuffleboard.autonomousTab.getAutonomousTabData());
-                // System.out.println(autonomousTabData);
-                
-                // Create the Autonomous Command List that will be scheduled to run during autonomousInit()
-                // autonomousCommand = new AutoCommandList(robotContainer, autonomousTabData);
-                // autonomousCommand = robotContainer.mainShuffleboard.autonomousTab.getAutonomousCommand();
+                // The Autonomous Command that will be scheduled to run during autonomousInit()
                 autonomousCommand = robotContainer.mainShuffleboard.autonomousTab.getAutonomousCommand();
 
                 // Reset the gyro, encoders, and any other sensors
                 robotContainer.resetRobot(robotContainer.mainShuffleboard.autonomousTab.getStartingSide());
             }
         }
-
-        // DriverStation.getAlliance().isPresent();
     }
 
     /**
@@ -224,17 +211,13 @@ public class Robot extends TimedRobot
     public void autonomousPeriodic()
     {}
 
-        /**
+    /**
      * This method runs one time when the robot exits autonomous mode.
      */
     @Override
     public void autonomousExit()
     {
         robotContainer.stopRobot();
-        // if(robotContainer.pivot != null)
-        // {
-        //     robotContainer.pivot.setDefaultCommand(robotContainer.pivot.setAngleCommand(() -> 32.0));
-        // }
     }
 
     /**
@@ -255,12 +238,6 @@ public class Robot extends TimedRobot
             autonomousCommand = null;
             // autonomousTabData = null;
         }
-
-        // if(robotContainer.pivot != null)
-        // {
-        //     robotContainer.pivot.setDefaultCommand(robotContainer.pivot.setAngleCommand(() -> 32.0));
-        // }
-        
     }
 
     /**
@@ -293,7 +270,9 @@ public class Robot extends TimedRobot
 
         // Log all sticky faults.
         MotorController4237.logAllStickyFaults();
-        DataLogManager.stop();
+
+        if(DriverStation.isFMSAttached())
+            DataLogManager.stop();
     }
 
     /**

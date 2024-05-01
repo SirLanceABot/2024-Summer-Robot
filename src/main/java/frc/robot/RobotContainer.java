@@ -128,7 +128,7 @@ public class RobotContainer
     public final OperatorButtonBindings operatorButtonBindings;
     public final OperatorController operatorController;
     
-    private CommandSchedulerLog schedulerLog = null;
+    // private CommandSchedulerLog schedulerLog = null;
     private final SendableChooser<Command> autoChooser;
 
     // public boolean isBlueAlliance;
@@ -190,7 +190,7 @@ public class RobotContainer
         operatorController      = (useFullRobot || useOperatorController)   ? new OperatorController(Constants.Controller.OPERATOR)     : null;
         operatorButtonBindings  = (useFullRobot || useBindings)             ? new OperatorButtonBindings(this)                          : null;
 
-        configLog();
+        // configLog();
         
         if(compressor != null && pneumaticHub != null)
         {
@@ -212,18 +212,18 @@ public class RobotContainer
                 
     }
 
-    public void configLog()
-    {
-        boolean useConsole = false;
-        boolean useDataLog = true;
-        boolean useShuffleBoardLog = false;
+    // public void configLog()
+    // {
+    //     boolean useConsole = false;
+    //     boolean useDataLog = true;
+    //     boolean useShuffleBoardLog = false;
 
-        schedulerLog = new CommandSchedulerLog(useConsole, useDataLog, useShuffleBoardLog);
-        schedulerLog.logCommandInitialize();
-        schedulerLog.logCommandInterrupt();
-        schedulerLog.logCommandFinish();
-        schedulerLog.logCommandExecute();  // Generates a lot of output
-    }
+    //     schedulerLog = new CommandSchedulerLog(useConsole, useDataLog, useShuffleBoardLog);
+    //     schedulerLog.logCommandInitialize();
+    //     schedulerLog.logCommandInterrupt();
+    //     schedulerLog.logCommandFinish();
+    //     schedulerLog.logCommandExecute();  // Generates a lot of output
+    // }
 
     public void configCompressor()
     {
