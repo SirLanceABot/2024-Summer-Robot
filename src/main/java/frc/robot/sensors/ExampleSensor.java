@@ -1,15 +1,14 @@
-package frc.robot.subsystems;
+package frc.robot.sensors;
 
 import java.lang.invoke.MethodHandles;
 
-import edu.wpi.first.util.sendable.SendableRegistry;
-import frc.robot.Constants;
-import frc.robot.motors.TalonFX4237;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Use this class as a template to create other subsystems.
+ * Use this class as a template to create other sensors.
  */
-public class ExampleSubsystem extends Subsystem4237
+public class ExampleSensor extends Sensor4237
 {
     // This string gets the full name of the class, including the package name
     private static final String fullClassName = MethodHandles.lookup().lookupClass().getCanonicalName();
@@ -20,24 +19,23 @@ public class ExampleSubsystem extends Subsystem4237
     {
         System.out.println("Loading: " + fullClassName);
     }
-    
+
 
     // *** INNER ENUMS and INNER CLASSES ***
     // Put all inner enums and inner classes here
     private class PeriodicData
     {
         // INPUTS
+        private double sensorValue;
 
         // OUTPUTS
-        private double speed;
     }
 
 
     // *** CLASS VARIABLES & INSTANCE VARIABLES ***
     // Put all class variables and instance variables here
     private final PeriodicData periodicData = new PeriodicData();
-    private final TalonFX4237 motor1 = new TalonFX4237(4, Constants.ROBORIO, "Motor 1");
-    private final TalonFX4237 motor2 = new TalonFX4237(12, Constants.ROBORIO, "Motor 2");
+    private final AnalogInput sensor = new AnalogInput(0);
 
 
     // *** CLASS CONSTRUCTORS ***
@@ -46,16 +44,11 @@ public class ExampleSubsystem extends Subsystem4237
     /** 
      * Creates a new ExampleSubsystem. 
      */
-    public ExampleSubsystem()
-    {
-        super("Example Subsystem");
+    public ExampleSensor()
+    {   
+        super("Example Sensor");
         System.out.println("  Constructor Started:  " + fullClassName);
 
-        configMotors();
-
-        SendableRegistry.addLW(this, "Example Subsystem", "MY Subsystem");
-        // addChild("Motor 1", motor1);
-        // addChild("Motor 2", motor2);
 
         System.out.println("  Constructor Finished: " + fullClassName);
     }
@@ -64,52 +57,35 @@ public class ExampleSubsystem extends Subsystem4237
     // *** CLASS METHODS & INSTANCE METHODS ***
     // Put all class methods and instance methods here
 
-    private void configMotors()
-    {
-        motor1.setupFactoryDefaults();
-        motor2.setupFactoryDefaults();
-    }
-
     /**
      * Returns the value of the sensor
     * @return The value of periodData.sensorValue
     */
-    public void set(double speed)
+    public double getSensorValue()
     {
-        periodicData.speed = speed;
+        return periodicData.sensorValue;
     }
-
-    public void stop()
-    {
-        periodicData.speed = 0.0;
-    }
-
+    
 
     // *** OVERRIDEN METHODS ***
     // Put all methods that are Overridden here
-    @Override
-    public void readPeriodicInputs()
-    {
 
+    @Override
+    public void readPeriodicInputs() 
+    {
+        periodicData.sensorValue = sensor.getAverageVoltage();
     }
 
     @Override
-    public void writePeriodicOutputs()
+    public void writePeriodicOutputs() 
     {
-        motor1.set(periodicData.speed);
-        motor2.set(periodicData.speed);
+        SmartDashboard.putNumber("Analog Input", periodicData.sensorValue);
     }
 
     @Override
-    public void periodic()
+    public void runPeriodicTask()
     {
-        // This method will be called once per scheduler run
-    }
 
-    @Override
-    public void simulationPeriodic()
-    {
-        // This method will be called once per scheduler run during simulation
     }
 
     @Override
