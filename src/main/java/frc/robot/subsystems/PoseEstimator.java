@@ -1,15 +1,11 @@
 package frc.robot.subsystems;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.Driver;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -18,8 +14,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.DoubleArrayEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -45,7 +39,6 @@ public class PoseEstimator extends Subsystem4237
     private final Camera[] cameraArray;
 
     private final SwerveDrivePoseEstimator poseEstimator;
-    //private final Field2d field = new Field2d();
 
     // custom network table to make pose readable for AdvantageScope
     private NetworkTable ASTable;// = NetworkTableInstance.getDefault().getTable("ASTable");
@@ -55,6 +48,7 @@ public class PoseEstimator extends Subsystem4237
     private final double[] redAmpZoneCoords = {15.5, 7.5};
     private final double[] fieldDimensions = {16.542, 8.211};
 
+    // used in the Kalman filter to trust vision less and trust odometry more
     private Matrix<N3, N1> visionStdDevs;
     private Matrix<N3, N1> stateStdDevs;
 
@@ -70,7 +64,6 @@ public class PoseEstimator extends Subsystem4237
 
         // OUTPUTS
         private Pose2d estimatedPose = new Pose2d();
-        private Pose2d poseForAS;
 
         private DoubleArrayEntry poseEstimaterEntry;
 
@@ -95,6 +88,7 @@ public class PoseEstimator extends Subsystem4237
         periodicData.poseEstimaterEntry = ASTable.getDoubleArrayTopic("PoseEstimator").getEntry(defaultValues);
 
         double[] doubleArray = {0, 0, 0};
+
         visionStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), doubleArray);
         stateStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), doubleArray);
 
@@ -102,12 +96,6 @@ public class PoseEstimator extends Subsystem4237
 
         if(drivetrain != null && gyro != null)
         {
-            // poseEstimator = new SwerveDrivePoseEstimator(
-            //     drivetrain.getKinematics(),
-            //     gyro.getRotation2d(),
-            //     drivetrain.getSwerveModulePositions(),
-            //     drivetrain.getPose());
-
             poseEstimator = new SwerveDrivePoseEstimator(
                 drivetrain.getKinematics(),
                 gyro.getRotation2d(),
@@ -120,8 +108,6 @@ public class PoseEstimator extends Subsystem4237
         {
             poseEstimator = null;
         }
-
-        //SmartDashboard.putData("Field",field);
 
         System.out.println(fullClassName + " : Constructor Finished");
     }
@@ -137,7 +123,7 @@ public class PoseEstimator extends Subsystem4237
         visionStdDevs.set(2, 0, 0.95);  // heading (radians)    default = 0.9
     }
     
-    /** @return the estimated pose (Pose2d)*/
+    /** @return the estimated pose */
     public Pose2d getEstimatedPose() 
     {
         if(poseEstimator != null)
@@ -345,18 +331,16 @@ public class PoseEstimator extends Subsystem4237
 
         for(Camera camera : cameraArray)
         {
-            // Pose2d visionPose = camera.getBotPoseBlue().toPose2d();
-
             if(camera != null)
             {
                 if(camera.isTargetFound() && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
                 {
-                    Pose2d visionPose = camera.getBotPoseBlue().toPose2d();
+                    Pose2d visionPose = camera.getBotPoseBlue();
 
                     if(DriverStation.isDisabled())
                     {
                         poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue().toPose2d(), 
+                                camera.getBotPoseBlue(), 
                                 Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
                                 visionStdDevs.times(camera.getAverageDistanceFromTarget()));
                     }
@@ -367,47 +351,20 @@ public class PoseEstimator extends Subsystem4237
                         if(DriverStation.isAutonomousEnabled())
                         {
                             poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue().toPose2d(), 
+                                camera.getBotPoseBlue(), 
                                 Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
                                 visionStdDevs.times(2 * camera.getAverageDistanceFromTarget()));
                         }
                         else
                         {
                             poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue().toPose2d(), 
+                                camera.getBotPoseBlue(), 
                                 Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
                                 visionStdDevs.times(camera.getAverageDistanceFromTarget()));
                         }
                     }
-                    // if(DriverStation.isTeleopEnabled() && isPoseCloseToPrevious(visionPose))
-                    // if(DriverStation.isTeleopEnabled())
-                    // {
-                    //     poseEstimator.addVisionMeasurement(
-                    //         camera.getBotPoseBlue().toPose2d(), 
-                    //         Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-                    //         visionStdDevs.times(camera.getAverageDistanceFromTarget()));
-                    // }
                 }
             }
-            // if(!DriverStation.isAutonomousEnabled() && camera != null && camera.isTargetFound() && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
-            // {
-            //     // update pose estimator with limelight data (vision part)
-            //     // poseEstimator.addVisionMeasurement(
-            //     //     camera.getBotPoseBlue().toPose2d(), 
-            //     //     Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000));
-                
-            //     poseEstimator.addVisionMeasurement(
-            //         camera.getBotPoseBlue().toPose2d(), 
-            //         Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-            //         visionStdDevs.times(camera.getAverageDistanceFromTarget()));
-            // }
-            // else if(DriverStation.isAutonomousEnabled() && camera != null && camera.isTargetFound() && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
-            // {
-            //     poseEstimator.addVisionMeasurement(
-            //         camera.getBotPoseBlue().toPose2d(), 
-            //         Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-            //         visionStdDevs.times(2 * camera.getAverageDistanceFromTarget()));
-            // }
         }
 
         if(totalTagCount >= 3 && DriverStation.isTeleopEnabled())
@@ -422,17 +379,11 @@ public class PoseEstimator extends Subsystem4237
         if(poseEstimator != null && drivetrain != null && gyro != null)
         {
             periodicData.estimatedPose = poseEstimator.getEstimatedPosition();
-            periodicData.poseForAS = poseEstimator.getEstimatedPosition(); // variable for testing in AdvantageScope
 
             // put the pose onto the NT so AdvantageScope can read it
             // ASTable.getEntry("poseEstimator").setDoubleArray(Camera.toQuaternions(periodicData.poseForAS));
-            double[] pose = {
-                periodicData.poseForAS.getX(), periodicData.poseForAS.getY(), periodicData.poseForAS.getRotation().getDegrees()
-            };
+            double[] pose = {periodicData.estimatedPose.getX(), periodicData.estimatedPose.getY(), periodicData.estimatedPose.getRotation().getDegrees()};
             periodicData.poseEstimaterEntry.set(pose);
-            // ASTable.getEntry("poseEstimator").setDoubleArray(pose);
-
-            //field.setRobotPose(getEstimatedPose());
         }
     }
 
