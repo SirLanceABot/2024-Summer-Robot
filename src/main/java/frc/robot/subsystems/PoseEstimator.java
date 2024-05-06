@@ -333,7 +333,7 @@ public class PoseEstimator extends Subsystem4237
         {
             if(camera != null)
             {
-                if(camera.isTargetFound() && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
+                if(camera.getTagCount() > 0 && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
                 {
                     Pose2d visionPose = camera.getBotPoseBlue();
 

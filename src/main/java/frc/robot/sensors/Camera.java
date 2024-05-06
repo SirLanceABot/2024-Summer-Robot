@@ -3,6 +3,7 @@ package frc.robot.sensors;
 import java.lang.invoke.MethodHandles;
 
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -31,15 +32,16 @@ public class Camera extends Sensor4237
         
         // Network Table Entry variables named with LL convention (not camelcase)
         // because they match the name of the values sent to the Network Tables by the LL
-        private NetworkTableEntry botpose_wpiblue;
-        private NetworkTableEntry camerapose_targetspace;
+        private NetworkTableEntry botpose_wpiblue;  // MegaTag1
+        private NetworkTableEntry botpose_orb_wpiblue; // MegaTag2
 
         // Instance variables named with our convention (yes camelcase)
         private boolean isTargetFound;
         private double[] botPoseWPIBlue;
+        private double[] botPoseOrbWPIBlue;
 
-        private DoubleArrayEntry dblArrayEntry;
-
+        private DoubleArrayEntry megaTag1Entry;
+        private DoubleArrayEntry megaTag2Entry;
     }
 
     public static final int TRANSLATION_X_METERS_INDEX = 0;
@@ -54,7 +56,8 @@ public class Camera extends Sensor4237
     
 
     private final PeriodicData periodicData = new PeriodicData();
-    private double[] poseForAS = {0.0, 0.0, 0.0};   // custom array of values to make a pose that AS can read
+    private double[] megaTag1Pose = {0.0, 0.0, 0.0};    // custom array of values to make a MT1 pose that AS can read
+    private double[] megaTag2Pose = {0.0, 0.0, 0.0};    // custom array of values to make a MT2 pose that AS can read
     private NetworkTable cameraTable;   // offical LL table (includes ALL of the things LL chooses to publish)
 
     private NetworkTable ASTable = NetworkTableInstance.getDefault().getTable(Constants.ADVANTAGE_SCOPE_TABLE_NAME); // custom table for AdvantageScope testing
@@ -68,17 +71,13 @@ public class Camera extends Sensor4237
         // Assign the Network Table variable in the constructor so the camName parameter can be used
         cameraTable = NetworkTableInstance.getDefault().getTable(cameraName);   // official limelight table
 
-        periodicData.dblArrayEntry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
+        periodicData.megaTag1Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
+        periodicData.megaTag2Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
 
         periodicData.botpose_wpiblue = cameraTable.getEntry("botpose_wpiblue");
+        periodicData.botpose_orb_wpiblue = cameraTable.getEntry("botpose_orb_wpiblue");
 
         System.out.println("  Constructor Started:  " + fullClassName + " >> " + cameraName);
-    }
-
-    /** @return false if no target is found, true if target is found */
-    public boolean isTargetFound()
-    {
-        return periodicData.isTargetFound;
     }
 
     /**
@@ -95,31 +94,36 @@ public class Camera extends Sensor4237
     /** @return the robot pose on the field with a blue driverstration origin*/
     public Pose2d getBotPoseBlue()
     {
-        return convertArrayToPose(periodicData.botPoseWPIBlue);
+        // return convertArrayToPose(periodicData.botPoseWPIBlue);  // MegaTag1
+        return convertArrayToPose(periodicData.botPoseOrbWPIBlue);  // MegaTag2
     }
 
     /** @return the total latency from LL measurements */
     public double getTotalLatencyBlue()
     {
-        return periodicData.botPoseWPIBlue[TOTAL_LATENCY_INDEX];
+        // return periodicData.botPoseWPIBlue[TOTAL_LATENCY_INDEX]; // MegaTag1
+        return periodicData.botPoseOrbWPIBlue[TOTAL_LATENCY_INDEX]; // MegaTag2
     }
 
     //** @return the number of tags visible */
     public int getTagCount()
     {
-        return (int) periodicData.botPoseWPIBlue[TAG_COUNT_INDEX];
+        // return (int) periodicData.botPoseWPIBlue[TAG_COUNT_INDEX];   // MT1
+        return (int) periodicData.botPoseOrbWPIBlue[TAG_COUNT_INDEX];   // MT2
     }
 
     /** @return the average distance from the target in meters */
     public double getAverageDistanceFromTarget()
     {
-        return periodicData.botPoseWPIBlue[AVERAGE_TAG_DISTANCE_FROM_CAMERA_INDEX];
+        // return periodicData.botPoseWPIBlue[AVERAGE_TAG_DISTANCE_FROM_CAMERA_INDEX];
+        return periodicData.botPoseOrbWPIBlue[AVERAGE_TAG_DISTANCE_FROM_CAMERA_INDEX];
     }
 
     @Override
     public void readPeriodicInputs() 
     {
         periodicData.botPoseWPIBlue = periodicData.botpose_wpiblue.getDoubleArray(new double[11]);
+        periodicData.botPoseOrbWPIBlue = periodicData.botpose_orb_wpiblue.getDoubleArray(new double[11]);
     }
 
     @Override
@@ -127,13 +131,18 @@ public class Camera extends Sensor4237
     {
         // LL publishes a 3D pose in a weird format, so to make it readable
         // in AS we need to create our own double array and publish that
-        poseForAS[0] = periodicData.botPoseWPIBlue[0];
-        poseForAS[1] = periodicData.botPoseWPIBlue[1];
-        poseForAS[2] = periodicData.botPoseWPIBlue[5];
+        megaTag1Pose[0] = periodicData.botPoseWPIBlue[TRANSLATION_X_METERS_INDEX];
+        megaTag1Pose[1] = periodicData.botPoseWPIBlue[TRANSLATION_Y_METERS_INDEX];
+        megaTag1Pose[2] = periodicData.botPoseWPIBlue[ROTATION_YAW_DEGREES_INDEX];
+
+        megaTag2Pose[0] = periodicData.botPoseOrbWPIBlue[TRANSLATION_X_METERS_INDEX];
+        megaTag2Pose[1] = periodicData.botPoseOrbWPIBlue[TRANSLATION_Y_METERS_INDEX];
+        megaTag2Pose[2] = periodicData.botPoseOrbWPIBlue[ROTATION_YAW_DEGREES_INDEX];
         
         // put the pose from LL onto the Network Table so AdvantageScope can read it
         // ASTable.getEntry(cameraName).setDoubleArray(poseForAS);
-        periodicData.dblArrayEntry.set(poseForAS);
+        periodicData.megaTag1Entry.set(megaTag1Pose);
+        periodicData.megaTag2Entry.set(megaTag2Pose);
     }
 
     @Override
