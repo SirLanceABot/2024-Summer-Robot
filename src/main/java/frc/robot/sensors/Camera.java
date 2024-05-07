@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayEntry;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -36,12 +37,13 @@ public class Camera extends Sensor4237
         private NetworkTableEntry botpose_orb_wpiblue; // MegaTag2
 
         // Instance variables named with our convention (yes camelcase)
-        private boolean isTargetFound;
-        private double[] botPoseWPIBlue;
-        private double[] botPoseOrbWPIBlue;
+        private double[] botPoseWPIBlue = new double[11];    // MT1
+        private double[] botPoseOrbWPIBlue = new double[11]; // MT2
 
         private DoubleArrayEntry megaTag1Entry;
         private DoubleArrayEntry megaTag2Entry;
+
+        private DoubleEntry yawEntry;
     }
 
     public static final int TRANSLATION_X_METERS_INDEX = 0;
@@ -54,6 +56,7 @@ public class Camera extends Sensor4237
     public static final int TAG_COUNT_INDEX = 7;
     public static final int AVERAGE_TAG_DISTANCE_FROM_CAMERA_INDEX = 9;
     
+    private String cameraName;
 
     private final PeriodicData periodicData = new PeriodicData();
     private double[] megaTag1Pose = {0.0, 0.0, 0.0};    // custom array of values to make a MT1 pose that AS can read
@@ -66,6 +69,7 @@ public class Camera extends Sensor4237
     public Camera(String cameraName)
     {   
         super("Camera");
+        this.cameraName = cameraName;
         System.out.println("  Constructor Started:  " + fullClassName + " >> " + cameraName);
 
         // Assign the Network Table variable in the constructor so the camName parameter can be used
@@ -73,6 +77,7 @@ public class Camera extends Sensor4237
 
         periodicData.megaTag1Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
         periodicData.megaTag2Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
+        periodicData.yawEntry = ASTable.getDoubleTopic("GyroYaw").getEntry(0.0);
 
         periodicData.botpose_wpiblue = cameraTable.getEntry("botpose_wpiblue");
         periodicData.botpose_orb_wpiblue = cameraTable.getEntry("botpose_orb_wpiblue");
@@ -94,15 +99,15 @@ public class Camera extends Sensor4237
     /** @return the robot pose on the field with a blue driverstration origin*/
     public Pose2d getBotPoseBlue()
     {
-        // return convertArrayToPose(periodicData.botPoseWPIBlue);  // MegaTag1
-        return convertArrayToPose(periodicData.botPoseOrbWPIBlue);  // MegaTag2
+        // return convertArrayToPose(periodicData.botPoseWPIBlue);  // MT1
+        return convertArrayToPose(periodicData.botPoseOrbWPIBlue);  // MT2
     }
 
     /** @return the total latency from LL measurements */
     public double getTotalLatencyBlue()
     {
-        // return periodicData.botPoseWPIBlue[TOTAL_LATENCY_INDEX]; // MegaTag1
-        return periodicData.botPoseOrbWPIBlue[TOTAL_LATENCY_INDEX]; // MegaTag2
+        // return periodicData.botPoseWPIBlue[TOTAL_LATENCY_INDEX]; // MT1
+        return periodicData.botPoseOrbWPIBlue[TOTAL_LATENCY_INDEX]; // MT2
     }
 
     //** @return the number of tags visible */
@@ -143,6 +148,8 @@ public class Camera extends Sensor4237
         // ASTable.getEntry(cameraName).setDoubleArray(poseForAS);
         periodicData.megaTag1Entry.set(megaTag1Pose);
         periodicData.megaTag2Entry.set(megaTag2Pose);
+
+        LimelightHelpers.SetRobotOrientation(cameraName, periodicData.yawEntry.get(), 0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
     @Override
