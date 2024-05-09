@@ -75,8 +75,8 @@ public class Camera extends Sensor4237
         // Assign the Network Table variable in the constructor so the camName parameter can be used
         cameraTable = NetworkTableInstance.getDefault().getTable(cameraName);   // official limelight table
 
-        periodicData.megaTag1Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
-        periodicData.megaTag2Entry = ASTable.getDoubleArrayTopic(cameraName).getEntry(defaultArray);
+        periodicData.megaTag1Entry = ASTable.getDoubleArrayTopic(cameraName + " MT1").getEntry(defaultArray);
+        periodicData.megaTag2Entry = ASTable.getDoubleArrayTopic(cameraName + " MT2").getEntry(defaultArray);
         periodicData.yawEntry = ASTable.getDoubleTopic("GyroYaw").getEntry(0.0);
 
         periodicData.botpose_wpiblue = cameraTable.getEntry("botpose_wpiblue");
