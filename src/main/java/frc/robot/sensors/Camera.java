@@ -33,14 +33,11 @@ public class Camera extends Sensor4237
         
         // Network Table Entry variables named with LL convention (not camelcase)
         // because they match the name of the values sent to the Network Tables by the LL
-        private NetworkTableEntry botpose_wpiblue;  // MegaTag1
         private NetworkTableEntry botpose_orb_wpiblue; // MegaTag2
 
-        // Instance variables named with our convention (yes camelcase)
-        private double[] botPoseWPIBlue = new double[11];    // MT1
+        // Instance variable named with our convention (yes camelcase)
         private double[] botPoseOrbWPIBlue = new double[11]; // MT2
 
-        private DoubleArrayEntry megaTag1Entry;
         private DoubleArrayEntry megaTag2Entry;
 
         private DoubleEntry yawEntry;
@@ -59,7 +56,6 @@ public class Camera extends Sensor4237
     private String cameraName;
 
     private final PeriodicData periodicData = new PeriodicData();
-    private double[] megaTag1Pose = {0.0, 0.0, 0.0};    // custom array of values to make a MT1 pose that AS can read
     private double[] megaTag2Pose = {0.0, 0.0, 0.0};    // custom array of values to make a MT2 pose that AS can read
     private NetworkTable cameraTable;   // offical LL table (includes ALL of the things LL chooses to publish)
 
@@ -70,16 +66,15 @@ public class Camera extends Sensor4237
     {   
         super("Camera");
         this.cameraName = cameraName;
+        
         System.out.println("  Constructor Started:  " + fullClassName + " >> " + cameraName);
 
         // Assign the Network Table variable in the constructor so the camName parameter can be used
         cameraTable = NetworkTableInstance.getDefault().getTable(cameraName);   // official limelight table
 
-        periodicData.megaTag1Entry = ASTable.getDoubleArrayTopic(cameraName + " MT1").getEntry(defaultArray);
         periodicData.megaTag2Entry = ASTable.getDoubleArrayTopic(cameraName + " MT2").getEntry(defaultArray);
         periodicData.yawEntry = ASTable.getDoubleTopic("GyroYaw").getEntry(0.0);
 
-        periodicData.botpose_wpiblue = cameraTable.getEntry("botpose_wpiblue");
         periodicData.botpose_orb_wpiblue = cameraTable.getEntry("botpose_orb_wpiblue");
 
         System.out.println("  Constructor Started:  " + fullClassName + " >> " + cameraName);
@@ -127,7 +122,6 @@ public class Camera extends Sensor4237
     @Override
     public void readPeriodicInputs() 
     {
-        periodicData.botPoseWPIBlue = periodicData.botpose_wpiblue.getDoubleArray(new double[11]);
         periodicData.botPoseOrbWPIBlue = periodicData.botpose_orb_wpiblue.getDoubleArray(new double[11]);
     }
 
@@ -136,9 +130,6 @@ public class Camera extends Sensor4237
     {
         // LL publishes a 3D pose in a weird format, so to make it readable
         // in AS we need to create our own double array and publish that
-        megaTag1Pose[0] = periodicData.botPoseWPIBlue[TRANSLATION_X_METERS_INDEX];
-        megaTag1Pose[1] = periodicData.botPoseWPIBlue[TRANSLATION_Y_METERS_INDEX];
-        megaTag1Pose[2] = periodicData.botPoseWPIBlue[ROTATION_YAW_DEGREES_INDEX];
 
         megaTag2Pose[0] = periodicData.botPoseOrbWPIBlue[TRANSLATION_X_METERS_INDEX];
         megaTag2Pose[1] = periodicData.botPoseOrbWPIBlue[TRANSLATION_Y_METERS_INDEX];
@@ -146,7 +137,6 @@ public class Camera extends Sensor4237
         
         // put the pose from LL onto the Network Table so AdvantageScope can read it
         // ASTable.getEntry(cameraName).setDoubleArray(poseForAS);
-        periodicData.megaTag1Entry.set(megaTag1Pose);
         periodicData.megaTag2Entry.set(megaTag2Pose);
 
         LimelightHelpers.SetRobotOrientation(cameraName, periodicData.yawEntry.get(), 0.0, 0.0, 0.0, 0.0, 0.0);
