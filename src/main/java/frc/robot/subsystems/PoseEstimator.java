@@ -15,7 +15,6 @@ import edu.wpi.first.networktables.DoubleArrayEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.sensors.Camera;
 import frc.robot.sensors.Gyro4237;
@@ -333,16 +332,16 @@ public class PoseEstimator extends Subsystem4237
         {
             if(camera != null)
             {
-                if(camera.getTagCount() > 0 && camera.getAverageDistanceFromTarget() < MAX_TARGET_DISTANCE)
+                if(camera.getTagCount() > 0 && camera.getAverageTagDistance() < MAX_TARGET_DISTANCE)
                 {
-                    Pose2d visionPose = camera.getBotPoseBlue();
+                    Pose2d visionPose = camera.getPose();
 
                     if(DriverStation.isDisabled())
                     {
                         poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue(), 
-                                Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-                                visionStdDevs.times(camera.getAverageDistanceFromTarget()));
+                                camera.getPose(), 
+                                camera.getTimestamp(),
+                                visionStdDevs.times(camera.getAverageTagDistance()));
                     }
 
                     if(isPoseValid(visionPose))
@@ -351,16 +350,16 @@ public class PoseEstimator extends Subsystem4237
                         if(DriverStation.isAutonomousEnabled())
                         {
                             poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue(), 
-                                Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-                                visionStdDevs.times(2 * camera.getAverageDistanceFromTarget()));
+                                camera.getPose(), 
+                                camera.getTimestamp(),
+                                visionStdDevs.times(2 * camera.getAverageTagDistance()));
                         }
                         else
                         {
                             poseEstimator.addVisionMeasurement(
-                                camera.getBotPoseBlue(), 
-                                Timer.getFPGATimestamp() - (camera.getTotalLatencyBlue() / 1000),
-                                visionStdDevs.times(camera.getAverageDistanceFromTarget()));
+                                camera.getPose(), 
+                                camera.getTimestamp(),
+                                visionStdDevs.times(camera.getAverageTagDistance()));
                         }
                     }
                 }
