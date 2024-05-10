@@ -51,7 +51,7 @@ public class PoseEstimator extends Subsystem4237
     private Matrix<N3, N1> visionStdDevs;
     private Matrix<N3, N1> stateStdDevs;
 
-    private final double MAX_TARGET_DISTANCE = 5.0; // meters
+    // private final double MAX_TARGET_DISTANCE = 5.0; // meters
 
     private int totalTagCount = 0;
 
@@ -271,41 +271,11 @@ public class PoseEstimator extends Subsystem4237
         poseEstimator.resetPosition(gyroAngle, modulePositions, newPose);
     }
 
-    public boolean isPoseCloseToCurrent(Pose2d pose)
-    {
-        // if pose is close to the current pose (within 3 meters)
-        if(pose.getTranslation().getDistance(periodicData.estimatedPose.getTranslation()) < 3.0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public boolean isPoseInsideField(Pose2d pose)
     {
         // if the x component of the pose is within the field, and the y component is in the field
         // 1 meter buffer given
         if((pose.getX() > -1.0 && pose.getX() < fieldDimensions[0] + 1.0) && (pose.getY() > -1.0 && pose.getY() < fieldDimensions[1] + 1.0))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Checks to see if the given pose is close enough to the current pose and if the given pose is actually inside the field
-     * @param pose
-     * @return true if pose is valid
-     */
-    public boolean isPoseValid(Pose2d pose)
-    {
-        if(isPoseCloseToCurrent(pose) && isPoseInsideField(pose))
         {
             return true;
         }
@@ -332,41 +302,23 @@ public class PoseEstimator extends Subsystem4237
         {
             if(camera != null)
             {
-                if(camera.getTagCount() > 0 && camera.getAverageTagDistance() < MAX_TARGET_DISTANCE)
+                if(camera.getTagCount() > 0)
                 {
                     Pose2d visionPose = camera.getPose();
 
-                    if(DriverStation.isDisabled())
-                    {
-                        poseEstimator.addVisionMeasurement(
-                                camera.getPose(), 
-                                camera.getTimestamp(),
-                                visionStdDevs.times(camera.getAverageTagDistance()));
-                    }
-
-                    if(isPoseValid(visionPose))
+                    if(isPoseInsideField(visionPose))
                     {
                         totalTagCount += camera.getTagCount();
-                        if(DriverStation.isAutonomousEnabled())
-                        {
-                            poseEstimator.addVisionMeasurement(
-                                camera.getPose(), 
+                        poseEstimator.addVisionMeasurement(
+                                visionPose, 
                                 camera.getTimestamp(),
-                                visionStdDevs.times(2 * camera.getAverageTagDistance()));
-                        }
-                        else
-                        {
-                            poseEstimator.addVisionMeasurement(
-                                camera.getPose(), 
-                                camera.getTimestamp(),
-                                visionStdDevs.times(camera.getAverageTagDistance()));
-                        }
+                                visionStdDevs.times(camera.getAverageTagDistance() * 0.5));
                     }
                 }
             }
         }
 
-        if(totalTagCount >= 3 && DriverStation.isTeleopEnabled())
+        if(totalTagCount >= 3)
         {
             drivetrain.resetOdometryOnly(poseEstimator.getEstimatedPosition());
         }

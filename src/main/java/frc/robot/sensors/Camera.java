@@ -34,6 +34,7 @@ public class Camera extends Sensor4237
     
     private String cameraName;
     private LimelightHelpers.PoseEstimate mt2PoseEstimate;
+    private double[] poseArray = new double[3];
 
     private final PeriodicData periodicData = new PeriodicData();
 
@@ -81,7 +82,7 @@ public class Camera extends Sensor4237
     @Override
     public void readPeriodicInputs() 
     {
-        LimelightHelpers.SetRobotOrientation(cameraName, periodicData.yawEntry.get(), 0.0, 0.0, 0.0, 0.0, 0.0);
+        mt2PoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
     }
 
     @Override
@@ -89,13 +90,16 @@ public class Camera extends Sensor4237
     {
         // LL publishes a 3D pose in a weird format, so to make it readable
         // we need to create our own double array and publish that
-        double[] poseArray = new double[3];
+        
         poseArray[0] = mt2PoseEstimate.pose.getX();
         poseArray[1] = mt2PoseEstimate.pose.getY();
         poseArray[2] = mt2PoseEstimate.pose.getRotation().getDegrees();
 
         // put the pose from LL onto the Network Table so AdvantageScope can read it
         periodicData.poseEntry.set(poseArray);        
+
+        LimelightHelpers.SetRobotOrientation(cameraName, periodicData.yawEntry.get(), 0.0, 0.0, 0.0, 0.0, 0.0);
+
     }
 
     @Override
