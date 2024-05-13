@@ -51,7 +51,6 @@ public class PoseEstimator extends Subsystem4237
     private Matrix<N3, N1> visionStdDevs;
     private Matrix<N3, N1> stateStdDevs;
 
-    // private final double MAX_TARGET_DISTANCE = 5.0; // meters
 
     private int totalTagCount = 0;
 
@@ -332,7 +331,6 @@ public class PoseEstimator extends Subsystem4237
             periodicData.estimatedPose = poseEstimator.getEstimatedPosition();
 
             // put the pose onto the NT so AdvantageScope can read it
-            // ASTable.getEntry("poseEstimator").setDoubleArray(Camera.toQuaternions(periodicData.poseForAS));
             double[] pose = {periodicData.estimatedPose.getX(), periodicData.estimatedPose.getY(), periodicData.estimatedPose.getRotation().getDegrees()};
             periodicData.poseEstimaterEntry.set(pose);
         }
