@@ -163,6 +163,8 @@ public class Robot extends TimedRobot
                 robotContainer.resetRobot(robotContainer.mainShuffleboard.autonomousTab.getStartingSide());
             }
         }
+
+        robotContainer.driverButtonBindings.setJoystickAxis();
     }
 
     /**

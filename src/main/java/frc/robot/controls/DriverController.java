@@ -80,6 +80,18 @@ public class DriverController extends Xbox
         return () -> periodicData.axis[axis.value] * scaleFactorSupplier.getAsDouble();
     }
 
+    public DoubleSupplier getAxisSupplier(Axis axis, DoubleSupplier scaleFactorSupplier, boolean shouldNegate)
+    {
+        if(shouldNegate)
+        {
+            return () -> -1 * periodicData.axis[axis.value] * scaleFactorSupplier.getAsDouble();
+        }
+        else
+        {
+            return () -> periodicData.axis[axis.value] * scaleFactorSupplier.getAsDouble();
+        }
+    }
+
     public BooleanSupplier getButtonSupplier(Button button)
     {
         return () -> periodicData.button[button.value];

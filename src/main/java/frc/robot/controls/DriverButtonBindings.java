@@ -106,7 +106,16 @@ public class DriverButtonBindings
 
         System.out.println("  Constructor Finished: " + fullClassName);
     }
-    
+
+    public void setJoystickAxis()
+    {
+        boolean shouldNegate = robotContainer.isRedAllianceSupplier().getAsBoolean();
+        
+        leftYAxis = robotContainer.driverController.getAxisSupplier(Xbox.Axis.kLeftY, scaleFactorSupplier, shouldNegate);
+        leftXAxis = robotContainer.driverController.getAxisSupplier(Xbox.Axis.kLeftX, scaleFactorSupplier, shouldNegate);
+
+    }
+
     private void configAButton()
     {
         // A Button
