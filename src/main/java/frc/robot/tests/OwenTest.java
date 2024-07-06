@@ -132,21 +132,21 @@ public class OwenTest implements Test
 
         if(joystick.getRawButton(1))
         {
-            robotContainer.pivot.setAngleCommand(() -> 55).schedule();
+            robotContainer.pivot.setAngle(() -> 55).schedule();
         //     // Commands4237.intakeFromFloorFront().schedule();
         //     robotContainer.flywheel.shootCommand(() -> 57.0).schedule();
         //     // robotContainer.flywheel
         }
         else if(joystick.getRawButton(2))
         {
-            robotContainer.pivot.setAngleCommand(() -> 30).schedule();
+            robotContainer.pivot.setAngle(() -> 30).schedule();
         //     // Commands4237.intakeFromFloorFront().schedule();
         //     robotContainer.flywheel.shootCommand(() -> 53.0).schedule();
         //     // robotContainer.flywheel
         }
         else
         {
-            robotContainer.pivot.stopCommand().schedule();
+            robotContainer.pivot.stop().schedule();
         //     // Commands4237.intakeFromFloorFront().schedule();
         //     robotContainer.flywheel.shootCommand(() -> 50.0).schedule();
         //     // robotContainer.flywheel

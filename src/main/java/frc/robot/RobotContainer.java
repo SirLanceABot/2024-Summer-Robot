@@ -378,7 +378,7 @@ public class RobotContainer
 
         if(pivot != null)
         {
-            NamedCommands.registerCommand("Pivot To Default Angle", pivot.setAngleCommand(() -> pivot.classConstants.DEFAULT_ANGLE));
+            NamedCommands.registerCommand("Pivot To Default Angle", pivot.setAngle(() -> pivot.classConstants.DEFAULT_ANGLE));
         }
         else
         {

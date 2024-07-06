@@ -97,7 +97,8 @@ public class Pivot extends Subsystem4237
         public final double DEFAULT_ANGLE_TOLERANCE = 0.3;
 
         //for manually moving Pivot
-        private final double MOTOR_SPEED = 0.1;
+        private final double UP_MOTOR_SPEED = 0.1;
+        private final double DOWN_MOTOR_SPEED = -0.1;
     }
     
     // *** CLASS VARIABLES & INSTANCE VARIABLES ***
@@ -302,19 +303,12 @@ public class Pivot extends Subsystem4237
         ampAnglePassMap.put(37.0, 47.7);
     }
 
-
-
-    public void moveUp()
+    public void move(double motorSpeed)
     {
-        motor.set(classConstants.MOTOR_SPEED);
+        motor.set(motorSpeed);
     }
 
-    public void moveDown()
-    {
-        motor.set(-classConstants.MOTOR_SPEED);
-    }
-
-    public void stop()
+    public void stopMotor()
     {
         motor.set(0.0);
     }
@@ -484,14 +478,19 @@ public class Pivot extends Subsystem4237
         return Commands.runOnce(() -> setAngleOLD(angle.getAsDouble()), this).withName("Set Angle");
     }
 
-    public Command setAngleCommand(DoubleSupplier angle)
+    public Command setAngle(DoubleSupplier angle)
     {
         return Commands.run(() -> setAngle(angle.getAsDouble()), this).withName("Set Angle");
     }
 
-    public Command moveDownCommand()
+    public Command moveUp()
     {
-        return Commands.run(() -> moveDown(), this);
+        return Commands.run(() -> move(classConstants.UP_MOTOR_SPEED), this);
+    }
+
+    public Command moveDown()
+    {
+        return Commands.run(() -> move(classConstants.DOWN_MOTOR_SPEED), this);
     }
 
     public Command resetMotorEncoderCommand()
@@ -506,14 +505,14 @@ public class Pivot extends Subsystem4237
 
     }
 
-    public Command resetPIDCommand()
+    public Command resetAngleControl()
     {
         return Commands.runOnce(PIDcontroller::reset);
     }
 
-    public Command stopCommand()
+    public Command stop()
     {
-        return Commands.runOnce(() -> stop());
+        return Commands.runOnce(() -> stopMotor());
     }
 
     // public Command tunePID()
@@ -570,7 +569,7 @@ public class Pivot extends Subsystem4237
 
         if(periodicData.isBadAngle)
         {
-            stop();
+            stopMotor();
             System.out.println("Angle is out of Range");
             periodicData.isBadAngle = false;
         }

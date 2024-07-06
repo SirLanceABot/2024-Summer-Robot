@@ -68,7 +68,7 @@ public class DaneTest implements Test
         }
         else
         {
-            pivot.stop();
+            pivot.stopMotor();
         }
     }
     
@@ -77,7 +77,7 @@ public class DaneTest implements Test
      */
     public void exit()
     {
-        pivot.stop();
+        pivot.stopMotor();
     }
 
     // *** METHODS ***
