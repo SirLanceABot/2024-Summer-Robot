@@ -30,6 +30,8 @@ import com.ctre.phoenix6.spns.SpnValue;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringEntry;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
@@ -562,9 +564,11 @@ public class TalonFX4237 extends MotorController4237
      * Units are rotations by default, but can be changed using the conversion factor.
      * @param position The position to move the motor to
      */
-    public void setControlPosition(double position)
+    /*add public void setPosition(Measure<Angle> position)*/
+    /*remove*/public void setControlPosition(double position)
     {
-        motor.setControl(positionVoltage.withPosition(position));
+    /*add motor.setPosition(position.in(Rotation));*/
+    /*remove*/ motor.setControl(positionVoltage.withPosition(position));
     }
 
     /**

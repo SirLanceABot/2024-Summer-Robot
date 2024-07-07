@@ -1,37 +1,31 @@
 package frc.robot.subsystems;
 
-import java.lang.invoke.MethodHandles;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
+import frc.robot.Constants;
+import frc.robot.motors.TalonFX4237;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringEntry;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.util.datalog.StringLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants;
-import frc.robot.motors.TalonFX4237;
-import frc.robot.sensors.CANcoder4237;
 
+import java.lang.invoke.MethodHandles;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 /**
  * This class creates a Pivot to set the angle of the flywheel.
@@ -78,18 +72,17 @@ public class Pivot extends Subsystem4237
     public class ClassConstants
     {
         //for PID
-        private final double kP = 0.75; //0.75; //140.0;
+        private final double kP = 0.75;
         private final double kI = 0.0;
         private final double kD = 0.0;
         private final double kS = 0.1;
-        // private double setPoint = 0.0;
         private int slotId = 0;
 
         //limits
         private final double FORWARD_SOFT_LIMIT = 64.0; //66 degrees is the top
         private final double REVERSE_SOFT_LIMIT = 27.0; //22 degrees is the bottom *add 2 to the limit for correct value
-        //TODONT don't use this
-        private final double MAGNET_OFFSET = -0.218994140625;//-0.2173014322916667; //-0.21624856; // updated 3/5/24   -0.54925655555; // updated 3/4/24   -0.71478456;
+
+        private final double MAGNET_OFFSET = -0.218994140625;
 
         public final double DEFAULT_ANGLE = 32.0;
         public final double INTAKE_FROM_SOURCE_ANGLE = 60.0;   //TODO: Check angle
@@ -103,9 +96,6 @@ public class Pivot extends Subsystem4237
     
     // *** CLASS VARIABLES & INSTANCE VARIABLES ***
 
-    //final static DataLog log = DataLogManager.getLog();
-    // private StringLogEntry cancoderLogEntry;
-    // private DoubleLogEntry doubleLogEntry;
     private StringEntry setupEntry;
 
     private String canCoderName = "pivotCANcoder";
@@ -114,7 +104,6 @@ public class Pivot extends Subsystem4237
 
     private final NetworkTable angleNetworkTable;    
     
-
     private boolean logPeriodicData = true;
 
     // Put all class variables and instance variables here
@@ -126,11 +115,9 @@ public class Pivot extends Subsystem4237
     // private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ks, kv, ka);
     private final InterpolatingDoubleTreeMap speakerAngleShotMap = new InterpolatingDoubleTreeMap();
     private final InterpolatingDoubleTreeMap ampAnglePassMap = new InterpolatingDoubleTreeMap();
+    /*add     private Measure<Angle> setpoint; // should this be initialized to current position? */
 
-    // private AnalogEncoder rotaryEncoder = new AnalogEncoder(3);
-    
-
-     // *** CLASS CONSTRUCTORS ***
+    // *** CLASS CONSTRUCTORS ***
     // Put all class constructors here
 
     /** 
@@ -174,14 +161,12 @@ public class Pivot extends Subsystem4237
 
     private void configCANcoder()
     {
-        CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
-
-        // setup(() -> pivotAngle.getConfigurator().apply(canCoderConfig), "Setup Factory Defaults");
-        // setup(() -> cancoder.getConfigurator().refresh(canCoderConfig), "Refresh CANcoder");
+        CANcoderConfiguration canCoderConfig = new CANcoderConfiguration(); // gets all the factory default values
+        // overlay factory defaults with our values as needed; anything not set below will have the factory default from above
         canCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         canCoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
         canCoderConfig.MagnetSensor.MagnetOffset = classConstants.MAGNET_OFFSET;
-        setup(() -> cancoder.getConfigurator().apply(canCoderConfig), "Setup CANcoder");
+        setup(() -> cancoder.getConfigurator().apply(canCoderConfig), "Setup CANcoder"); // send all values to the device
     }
 
     private void configPivotMotor()
@@ -190,14 +175,10 @@ public class Pivot extends Subsystem4237
         motor.setupFactoryDefaults();
         motor.setupInverted(true);
         motor.setupBrakeMode();
-        motor.setupPositionConversionFactor(200.0 / 360.0);
-        // motor.setupRemoteCANCoder(Constants.Pivot.CANCODER_PORT);
+        /*remove*/motor.setupPositionConversionFactor(200.0 / 360.0); // CTRE says not to use this method for units conversion; not accurate
+        /*add motor.setupRemoteCANCoder(Constants.Pivot.CANCODER_PORT);*/
         motor.setSafetyEnabled(false);
-        // motor.setPosition(fPart(pivotAngle.getPosition().getValueAsDouble()) * 200);
-        // motor.setPosition(21.0);
-        // motor.setPosition((cancoder.getAbsolutePosition().getValueAsDouble() + classConstants.MAGNET_OFFSET) * 360.0);
-         motor.setPosition((cancoder.getAbsolutePosition().getValueAsDouble()) * 360.0);
-
+        /*remove*/motor.setPosition((cancoder.getAbsolutePosition().getValueAsDouble()) * 360.0);
         motor.setupPIDController(classConstants.slotId, classConstants.kP, classConstants.kI, classConstants.kD);
         
         // Soft Limits
@@ -330,42 +311,16 @@ public class Pivot extends Subsystem4237
         return periodicData.motorEncoderRotationalPosition;
     }
     
+    /*remove method */
     public void setAngleOLD(double degrees)
     {
         //setAngle using CANcoder
         degrees = MathUtil.clamp(degrees, classConstants.REVERSE_SOFT_LIMIT, classConstants.FORWARD_SOFT_LIMIT);
         // System.out.println("Target Angle: " + degrees);
         motor.setControlPosition(degrees);
-
-        //setAngle using FalconFX encoder
-        // if(getAngle() > (degrees + 2))
-        // {
-        //     moveDown();
-        // }
-        // else if(getAngle() < (degrees - 2))
-        // {
-        //     moveUp();
-        // }
-        // else
-        // {
-        //     stopMotor();
-        // }
-
-        //setAngle using rotary encoder
-        // if(getAngle() > (degrees + 1))
-        // {
-        //     moveDown();
-        // }
-        // else if(getAngle() < (degrees - 1))
-        // {
-        //     moveUp();
-        // } 
-        // else
-        // {
-        //     stopMotor();
-        // }
     }
 
+    /*remove method*/
     public void setAngle(double degrees)
     {
         // PIDcontroller.setP(classConstants.kP);
@@ -381,72 +336,51 @@ public class Pivot extends Subsystem4237
         // SmartDashboard.putNumber("pivotOutput", pivotOutput);
     }
 
+    /*add method*/
+    // /**
+    //  * Compatibility method for old style passing without Measure
+    //  * @param degrees
+    //  */
+    // public void setAngle(double degrees)
+    // {
+    //     setAngle(Degrees.of(degrees));
+    // }
 
+    /*add method*/
+    // /**
+    //  * Progress toward using Measure but still a mish-mash of Measure usage and not
+    //  * 
+    //  * @param angle
+    //  */
+    // public void setAngle(Measure<Angle> angle)
+    // {
+    //     setpoint = angle; // save for others' use
+    //     motor.setControlPosition(angle.in(Rotation)); // new position for Talon FX internal PID
 
-    public BooleanSupplier isAtAngle(double targetAngle)
-    {
-        // return () ->
-        // {
-        //     double position = motor.getPosition();
-        //     System.out.println("Position: " + position);
+    //     SmartDashboard.putNumber("setpoint degrees", angle.in(Degrees));
+    //     SmartDashboard.putNumber("cancoder position degrees", getCANCoderAngle());
+    //     SmartDashboard.putNumber("motor position degrees", motor.getPosition()*360.); // actually integrated cancoder position
+    //     // SmartDashboard.putNumber("motor position degrees", getMotorEncoderPosition()*360.);
 
-        //     boolean isAtAngle;
-        //     if(position > targetAngle - classConstants.ANGLE_TOLERANCE && position < targetAngle + classConstants.ANGLE_TOLERANCE)
-        //     {
-        //         isAtAngle = true;
-        //         System.out.println("Pivot Got To Angle");
-        //     }
-        //     else
-        //     {
-        //         isAtAngle = false;
-        //     }
-        //     return isAtAngle;
-        // };
+    //     // test the "at correct position" function
+    //     SmartDashboard.putBoolean("Pivot ready", isAtAngle().getAsBoolean());
 
-        return isAtAngleOLD(targetAngle, classConstants.DEFAULT_ANGLE_TOLERANCE);
-    }
-
-    public BooleanSupplier isAtAngleOLD(double targetAngle, double angleTolerance)
-    {
-        return () ->
-        {
-            double position = motor.getPosition();
-            // System.out.println("Position: " + position);
-
-            boolean isAtAngle;
-            if(position > targetAngle - angleTolerance && position < targetAngle + angleTolerance)
-            {
-                isAtAngle = true;
-                // System.out.println("Pivot Got To Angle");
-            }
-            else
-            {
-                isAtAngle = false;
-            }
-            return isAtAngle;
-        };
-    }
+    //     // temporary code troubleshooting possible problem - check if magnet offset ever changes
+    //     cancoder.getConfigurator().refresh(canCoderConfig);
+    //     SmartDashboard.putNumber("magnet offset", canCoderConfig.MagnetSensor.MagnetOffset);
+    //     var magnetOffsetOkay = MathUtil.isNear(
+    //         classConstants.MAGNET_OFFSET,
+    //         canCoderConfig.MagnetSensor.MagnetOffset,
+    //         Math.abs(classConstants.MAGNET_OFFSET*0.005),
+    //         -1.,
+    //         +1.);
+    //     SmartDashboard.putBoolean("magnet offset okay", magnetOffsetOkay);
+    // }
 
     public BooleanSupplier isAtAngle()
     {
-        // return () ->
-        // {
-        //     double position = getCANCoderAngle();
-        //     // System.out.println("Position: " + position);
-
-        //     boolean isAtAngle;
-        //     if(position > targetAngle - angleTolerance && position < targetAngle + angleTolerance)
-        //     {
-        //         isAtAngle = true;
-        //         // System.out.println("Pivot Got To Angle");
-        //     }
-        //     else
-        //     {
-        //         isAtAngle = false;
-        //     }
-        //     return isAtAngle;
-        // };
-        return () -> PIDcontroller.atSetpoint();
+        /*remove*/return () -> PIDcontroller.atSetpoint();
+        /*add         return () -> MathUtil.isNear(setpoint.in(Degrees), getCANCoderAngle(), classConstants.DEFAULT_ANGLE_TOLERANCE) ; */
     }
 
     /**
@@ -472,7 +406,7 @@ public class Pivot extends Subsystem4237
     }
 
     
-
+    /*remove this method*/
     public Command setAngleOLDCommand(DoubleSupplier angle)
     {
         return Commands.runOnce(() -> setAngleOLD(angle.getAsDouble()), this).withName("Set Angle");
@@ -482,6 +416,12 @@ public class Pivot extends Subsystem4237
     {
         return Commands.run(() -> setAngle(angle.getAsDouble()), this).withName("Set Angle");
     }
+
+    /*add this method - change name*/
+    // public Command setAngleCommand(Supplier<Measure<Angle>> angle)
+    // {
+    //     return run(() -> setAngle(angle.get())).withName("Set Angle");
+    // }
 
     public Command moveUp()
     {
@@ -515,17 +455,6 @@ public class Pivot extends Subsystem4237
         return Commands.runOnce(() -> stopMotor());
     }
 
-    // public Command tunePID()
-    // {
-    //     return Commands.runOnce(() -> motor.setupPIDController(myConstants.slotId, PIDcontroller.getP(), PIDcontroller.getI(), PIDcontroller.getD())).withName("setK's")
-    //         .andThen(
-    //             Commands.runOnce(() -> SmartDashboard.putBoolean("Activate PID", SmartDashboard.getBoolean("Activate PID", false)))).withName("reset switch")
-    //         .andThen(
-    //             Commands.runOnce(() -> setAngle(PIDcontroller.getSetpoint()))).withName("control to " + PIDcontroller.getSetpoint() + " degrees")
-    //         .finallyDo(
-    //             this.motor::stopMotor).withName("stop tuning");
-    // }
-
     // *** OVERRIDEN METHODS ***
     // Put all methods that are Overridden here
 
@@ -538,35 +467,11 @@ public class Pivot extends Subsystem4237
         periodicData.canCoderAbsolutePosition = cancoder.getAbsolutePosition().getValueAsDouble();
         periodicData.canCoderRotationalPosition = cancoder.getPosition().getValueAsDouble();
         periodicData.motorEncoderRotationalPosition = motor.getPosition();
-        // classConstants.kP = SmartDashboard.getNumber("kP", 0.0);
-
-
-        //All included in tunePID() command
-
-        // For Testing
-        // Changes the PID values to the values displayed on the PID widget
-        // myConstants.kP = PIDcontroller.getP();
-        // myConstants.kI = PIDcontroller.getI();
-        // myConstants.kD = PIDcontroller.getD();
-        // myConstants.setPoint = PIDcontroller.getSetpoint();
-        
-        // //variable to decide if the PID should be reset
-        // periodicData.isPIDSet = (myConstants.kP != PIDcontroller.getP() || myConstants.kI != PIDcontroller.getI() || myConstants.kD != PIDcontroller.getD() || myConstants.setPoint != PIDcontroller.getSetpoint());
-
-        // //Returns current state of the toggle switch
-        // periodicData.isToggleSwitchActive = SmartDashboard.getBoolean("Activate PID", !periodicData.isToggleSwitchActive);
     }
 
     @Override
     public void writePeriodicOutputs()
     {
-        //Stops the pivot if the angle for setAngle is out of range
-        // if(logPeriodicData)
-        // {
-        //     doubleLogEntry.append(periodicData.canCoderAbsolutePosition);
-        //     doubleLogEntry.append(periodicData.motorEncoderRotationalPosition);
-        // }
-
         if(periodicData.isBadAngle)
         {
             stopMotor();
@@ -578,39 +483,6 @@ public class Pivot extends Subsystem4237
         periodicData.canCoderAngleEntry.set(getCANCoderAngle());
         SmartDashboard.putNumber("Pivot CANCODER current Angle", getCANCoderAngle());
 
-        //Displays the pivot's current angle
-        
-
-        // SmartDashboard.putNumber("Pivot Cancoder Rotational Position:", getCANCoderPosition());
-        // SmartDashboard.putNumber("Pivot Motor Position:", getMotorEncoderPosition());
-
-
-
-
-        //For Testing
-        //Displays any changed values on the PID controller widget and sets the correct values to the PID controller
-        //Go to ShuffleBoard - Sources - NetworkTables to insert widget 
-        // if(periodicData.isPIDSet == false)
-        // {
-        //     PIDcontroller.setP(myConstants.kP);
-        //     PIDcontroller.setI(myConstants.kI);
-        //     PIDcontroller.setD(myConstants.kD);
-        //     PIDcontroller.setSetpoint(myConstants.setPoint);
-        //     motor.setupPIDController(myConstants.slotId, myConstants.kP, myConstants.kI, myConstants.kD);
-        // }
-
-        // // Toggle switch to use the PID controller widget (use toggle-button under Show as...)
-        // SmartDashboard.putBoolean("Activate PID", periodicData.isToggleSwitchActive);
-
-        // //For activating setPoint using the toggle switch
-        // if(periodicData.isToggleSwitchActive)
-        // {
-        //     setAngle(myConstants.setPoint);
-        // }
-        // else
-        // {
-        //     stopMotor();
-        // }
     }
 
     @Override
