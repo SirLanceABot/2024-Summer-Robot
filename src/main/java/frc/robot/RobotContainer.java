@@ -4,26 +4,8 @@
 
 package frc.robot;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
+import static edu.wpi.first.units.Units.Rotation;
 
-import com.fasterxml.jackson.databind.util.Named;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.PneumaticHub;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Shuttle;
 import frc.robot.subsystems.AmpAssist;
 import frc.robot.subsystems.Candle4237;
@@ -47,6 +29,27 @@ import frc.robot.sensors.Proximity;
 import frc.robot.shuffleboard.AutonomousTabData;
 import frc.robot.shuffleboard.MainShuffleboard;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.PneumaticHub;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import com.fasterxml.jackson.databind.util.Named;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -76,7 +79,7 @@ public class RobotContainer
     private boolean useIndex                = false;
     private boolean useIntake               = false;
     private boolean useIntakePositioning    = false;
-    private boolean usePivot                = false;
+    private boolean usePivot                = true;
     private boolean usePoseEstimator        = false;
     private boolean useShuttle              = false;
 
@@ -94,7 +97,7 @@ public class RobotContainer
 
     private boolean useBindings             = false;
     private boolean useDriverController     = false;
-    private boolean useOperatorController   = false;
+    private boolean useOperatorController   = true;
 
 
     public final boolean fullRobot;
@@ -209,7 +212,11 @@ public class RobotContainer
         {
             autoChooser = null;
         }
-                
+
+        //FIXME for testing Pivot
+        pivot.setAngle(()-> Rotation.of(operatorController.getRawAxis(3)))
+            .ignoringDisable(true) // keep running; nothing included here to restart if it stops
+            .schedule();            
     }
 
     // public void configLog()
