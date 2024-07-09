@@ -3,6 +3,8 @@ package frc.robot.motors;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.MotorSafety;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
@@ -105,7 +107,7 @@ public abstract class MotorController4237 extends MotorSafety implements MotorCo
     public abstract double[] getPID(int slotId);
     public abstract void logStickyFaults();
 
-    public abstract void setControlPosition(double position);
+    public abstract void setControlPosition(Measure<Angle> position);
     public abstract void setControlVelocity(double velocity);
     public abstract void setPosition(double position);
     public abstract double getPosition();

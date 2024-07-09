@@ -1,5 +1,7 @@
 package frc.robot.motors;
 
+import static edu.wpi.first.units.Units.Rotation;
+
 import java.lang.invoke.MethodHandles;
 
 import com.revrobotics.CANSparkBase;
@@ -16,6 +18,8 @@ import com.revrobotics.SparkPIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringEntry;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 
@@ -396,9 +400,9 @@ public class CANSparkMax4237 extends MotorController4237
      * Units are rotations by default, but can be changed using the conversion factor.
      * @param position The position to move the motor to
      */
-    public void setControlPosition(double position)
+    public void setControlPosition(Measure<Angle> position)
     {
-        sparkPIDController.setReference(position, CANSparkBase.ControlType.kPosition);
+        sparkPIDController.setReference(position.in(Rotation), CANSparkBase.ControlType.kPosition);
     }
 
     /**

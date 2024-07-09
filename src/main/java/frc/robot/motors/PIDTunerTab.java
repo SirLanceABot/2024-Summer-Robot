@@ -1,7 +1,8 @@
 package frc.robot.motors;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
+import static edu.wpi.first.units.Units.Rotation;
+
+import frc.robot.PeriodicIO;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -11,7 +12,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import frc.robot.PeriodicIO;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
 
 public class PIDTunerTab implements PeriodicIO, AutoCloseable
 {
@@ -52,7 +55,7 @@ public class PIDTunerTab implements PeriodicIO, AutoCloseable
     }
 
     // *** CLASS and INSTANCE VARAIBLES ***
-    // These varaibles are class and instance variables
+    // These variables are class and instance variables
     private ShuffleboardTab pidTunerTab = Shuffleboard.getTab("PIDTuner");
 
     private SendableChooser<MotorController4237> motorBox = new SendableChooser<>();
@@ -329,7 +332,7 @@ public class PIDTunerTab implements PeriodicIO, AutoCloseable
 
                 case kStillOn:
                     if(periodicData.pidControlType == PIDControlType.kPosition)
-                        motorBox.getSelected().setControlPosition(periodicData.setpoint);
+                        motorBox.getSelected().setControlPosition(Rotation.of(periodicData.setpoint));
                     else
                         motorBox.getSelected().setControlVelocity(periodicData.setpoint);
                     valueBox.setDouble(round(periodicData.value, 3));

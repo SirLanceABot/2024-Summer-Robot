@@ -1,6 +1,6 @@
 package frc.robot.motors;
 
-import java.lang.invoke.MethodHandles;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -36,6 +36,7 @@ import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 
+import java.lang.invoke.MethodHandles;
 
 public class TalonFX4237 extends MotorController4237
 {
@@ -564,11 +565,9 @@ public class TalonFX4237 extends MotorController4237
      * Units are rotations by default, but can be changed using the conversion factor.
      * @param position The position to move the motor to
      */
-    /*add public void setPosition(Measure<Angle> position)*/
-    /*remove*/public void setControlPosition(double position)
+    public void setControlPosition(Measure<Angle> position) // public void setControlPosition(double position) 
     {
-    /*add motor.setPosition(position.in(Rotation));*/
-    /*remove*/ motor.setControl(positionVoltage.withPosition(position));
+        motor.setControl(positionVoltage.withPosition(position.in(Rotation)));
     }
 
     /**
@@ -592,7 +591,21 @@ public class TalonFX4237 extends MotorController4237
     }
 
     /**
-     * Get the position of the encoder.
+     * Set the position of the encoder.
+     * Units are rotations by default, but can be changed using the conversion factor.
+     * @param position The position of the encoder
+     */
+    public void setPosition(Measure<Angle> position)
+    {
+        motor.setPosition(position.in(Rotation));
+    }
+
+    /**
+     * Get the position of the encoder. This is the internal encoder or the remote
+     * encoder if that is activated.
+     * 
+     * (Method getRotorPosition() is the internal encoder even if the external encoder is being used.)
+     * 
      * Units are rotations by default, but can be changed using the conversion factor.
      * @return The position of the encoder
      */

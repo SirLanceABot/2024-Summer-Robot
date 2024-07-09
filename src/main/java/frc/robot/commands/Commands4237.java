@@ -13,6 +13,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import java.lang.invoke.MethodHandles;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -438,7 +440,13 @@ public final class Commands4237
                 robotContainer.pivot.resetAngleControl())
             .andThen(
                 Commands.parallel(
-                    Commands.waitUntil(isRotatedAndReadyToShoot(robotContainer.pivot.calculateShootAngleFromDistance(getDistanceToSpeaker()), robotContainer.flywheel.calculateShootVelocityFromDistance(getDistanceToSpeaker()), robotContainer.drivetrain.getAngleToSpeaker(), robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE, robotContainer.flywheel.DEAULT_SPEED_TOLERANCE, 1.0))
+                    Commands.waitUntil(isRotatedAndReadyToShoot(
+                        robotContainer.pivot.calculateShootAngleFromDistance(getDistanceToSpeaker()),
+                     robotContainer.flywheel.calculateShootVelocityFromDistance(getDistanceToSpeaker()),
+                      robotContainer.drivetrain.getAngleToSpeaker(),
+                       robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE.in(Degrees),
+                        robotContainer.flywheel.DEAULT_SPEED_TOLERANCE,
+                         1.0))
                                                 .withTimeout(1.0)
                     .deadlineWith(
 
@@ -485,7 +493,11 @@ public final class Commands4237
                 robotContainer.pivot.resetAngleControl())
             .andThen(
                 Commands.parallel(
-                    Commands.waitUntil(isReadyToShoot(robotContainer.pivot.calculatePassAngleFromDistance(getDistanceToAmpZone()), robotContainer.flywheel.calculatePassVelocityFromDistance(getDistanceToAmpZone()), robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE, robotContainer.flywheel.DEAULT_SPEED_TOLERANCE))
+                    Commands.waitUntil(isReadyToShoot(
+                        robotContainer.pivot.calculatePassAngleFromDistance(getDistanceToAmpZone()),
+                     robotContainer.flywheel.calculatePassVelocityFromDistance(getDistanceToAmpZone()),
+                      robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE.in(Degrees),
+                       robotContainer.flywheel.DEAULT_SPEED_TOLERANCE))
                                                 .withTimeout(1.0)
                     .deadlineWith(
                         robotContainer.flywheel.shootCommand(() -> robotContainer.flywheel.calculatePassVelocityFromDistance(getDistanceToAmpZone())),
@@ -992,7 +1004,7 @@ public final class Commands4237
 
     private static BooleanSupplier isReadyToShoot(double targetAngle, double targetSpeed)
     {
-        return isReadyToShoot(targetAngle, targetSpeed, robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE, robotContainer.flywheel.DEAULT_SPEED_TOLERANCE);   
+        return isReadyToShoot(targetAngle, targetSpeed, robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE.in(Degrees), robotContainer.flywheel.DEAULT_SPEED_TOLERANCE);   
     }
 
     private static BooleanSupplier isReadyToShoot(double targetAngle, double targetSpeed, double angleTolerance, double speedTolerance)
@@ -1024,7 +1036,13 @@ public final class Commands4237
 
     private static BooleanSupplier isRotatedAndReadyToShoot(double targetAngle, double targetSpeed, double targetRotation)
     {
-        return isRotatedAndReadyToShoot(targetAngle, targetSpeed, targetRotation, robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE, robotContainer.flywheel.DEAULT_SPEED_TOLERANCE, robotContainer.drivetrain.DEFAULT_ALIGNMENT_TOLERANCE);   
+        return isRotatedAndReadyToShoot(
+            targetAngle,
+         targetSpeed,
+          targetRotation,
+           robotContainer.pivot.classConstants.DEFAULT_ANGLE_TOLERANCE.in(Degrees),
+            robotContainer.flywheel.DEAULT_SPEED_TOLERANCE,
+             robotContainer.drivetrain.DEFAULT_ALIGNMENT_TOLERANCE);   
     }
 
     private static BooleanSupplier isRotatedAndReadyToShoot(double targetAngle, double targetSpeed, double targetRotation, double angleTolerance, double speedTolerance, double rotationTolerance)
