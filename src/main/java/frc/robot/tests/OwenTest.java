@@ -3,6 +3,7 @@ package frc.robot.tests;
 import java.lang.invoke.MethodHandles;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.Optional;
 
 import javax.lang.model.util.ElementScanner14;
 
@@ -29,6 +30,12 @@ import frc.robot.subsystems.Climb.TargetPosition;
 import frc.robot.controls.Xbox;
 // import frc.robot.controls.OperatorController
 import frc.robot.sensors.Ultrasonic;
+import frc.robot.subsystems.PoseEstimator;
+
+// import choreo.Choreo;
+import com.choreo.lib.Choreo;
+import com.choreo.lib.ChoreoTrajectory;
+import com.choreo.lib.ChoreoTrajectoryState;
 
 public class OwenTest implements Test
 {
@@ -52,6 +59,7 @@ public class OwenTest implements Test
     // private final Shuttle shuttle;
     // private final Climb climb;
     // private final Ultrasonic ultrasonic;
+    // private final PoseEstimator poseEstimator;
     private final Joystick joystick = new Joystick(3);
     // private CANSparkMax motor = new CANSparkMax(0, MotorType.kBrushless);
     // private CANSparkMax motor1 = new CANSparkMax(1, MotorType.kBrushless);
@@ -69,6 +77,7 @@ public class OwenTest implements Test
         // flywheel = this.robotContainer.flywheel;
         // index = this.robotContainer.index;
         pivot = this.robotContainer.pivot;
+        // poseEstimator = this.poseEstimator;
         // intake = this.robotContainer.intake;
         // shuttle = this.robotContainer.shuttle;
         // climb = this.robotContainer.climb;
@@ -82,6 +91,12 @@ public class OwenTest implements Test
      */
     public void init()
     {
+        var trajectory = Choreo.getTrajectory("Test Path");
+        // Command swerveCommand = Choreo.choreoSwerveCommand(trajectory, )
+        // if(trajectory.isPresent())
+        // {
+
+        // }
         // climb.setLeftAndRightPosiiton(TargetPosition.kChain);
         
         // configRightTrigger();
@@ -146,7 +161,7 @@ public class OwenTest implements Test
         }
         else
         {
-            robotContainer.pivot.stop().schedule();
+            // robotContainer.pivot.stop().schedule();
         //     // Commands4237.intakeFromFloorFront().schedule();
         //     robotContainer.flywheel.shootCommand(() -> 50.0).schedule();
         //     // robotContainer.flywheel
