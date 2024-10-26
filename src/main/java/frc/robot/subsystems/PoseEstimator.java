@@ -317,7 +317,7 @@ public class PoseEstimator extends Subsystem4237
             }
         }
 
-        if(totalTagCount >= 3)
+        if(totalTagCount >= 2)
         {
             drivetrain.resetOdometryOnly(poseEstimator.getEstimatedPosition());
         }
