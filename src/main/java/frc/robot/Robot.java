@@ -6,10 +6,14 @@ package frc.robot;
 
 import java.lang.invoke.MethodHandles;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -200,7 +204,12 @@ public class Robot extends TimedRobot
         //     .withName("Follow Path Command")
         //     .schedule();
          
-        new PathPlannerAuto("Move Back.traj").schedule();
+        // new PathPlannerAuto(PathPlannerPath.fromChoreoTrajectory("Move Back")).schedule();
+        // PathPlannerPath examplePath = PathPlannerPath.fromChoreoTrajectory("MoveBackOwen1");
+        // // new PathPlannerAuto(examplePath.toString()).schedule();
+        // PathConstraints constraints = new PathConstraints(1.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+        // Command exampleCommand = AutoBuilder.pathfindThenFollowPath(examplePath, constraints);
+        // exampleCommand.schedule();
 
         if(autonomousCommand != null)
         {
