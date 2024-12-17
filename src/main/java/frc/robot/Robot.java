@@ -211,10 +211,12 @@ public class Robot extends TimedRobot
         // Command exampleCommand = AutoBuilder.pathfindThenFollowPath(examplePath, constraints);
         // exampleCommand.schedule();
 
-        if(autonomousCommand != null)
-        {
-            autonomousCommand.schedule();
-        }
+         new PathPlannerAuto("TESTING CHOREO BUT IT BLOWS").schedule();
+
+        // if(autonomousCommand != null)
+        // {
+        //     autonomousCommand.schedule();
+        // }
     }
 
     /**
